@@ -48,7 +48,7 @@ def __(HAS_CONFIG, config, mo):
         value=True
     )
 
-    load_button = mo.ui.button(label="Load Data", kind="success")
+    load_button = mo.ui.run_button(label="Load Data")
 
     config_display = mo.vstack([
         mo.md("""## Load Data"""),
@@ -63,83 +63,86 @@ def __(HAS_CONFIG, config, mo):
 
 @app.cell
 def __(Path, default_collection, default_db, default_uri, load_button, mo, pd, pickle, pymongo, use_cache):
+    # Stop execution until button is clicked
+    mo.stop(not load_button.value)
+
     df_final = None
     status_msg = ""
     cache_file = Path("data_cache.pkl")
 
-    if load_button.value:
-        # Try cache first if enabled
-        if use_cache.value and cache_file.exists():
-            try:
-                status_msg = "Loading from cache..."
-                with open(cache_file, 'rb') as f:
-                    df_final = pickle.load(f)
-                status_msg = f"✓ Loaded {len(df_final):,} records from cache"
-            except Exception as e:
-                status_msg = f"Cache failed ({e}), loading from MongoDB..."
-                df_final = None
+    # Button was clicked, load data
+    # Try cache first if enabled
+    if use_cache.value and cache_file.exists():
+        try:
+            status_msg = "Loading from cache..."
+            with open(cache_file, 'rb') as f:
+                df_final = pickle.load(f)
+            status_msg = f"✓ Loaded {len(df_final):,} records from cache"
+        except Exception as e:
+            status_msg = f"Cache failed ({e}), loading from MongoDB..."
+            df_final = None
 
-        # Load from MongoDB if needed
-        if df_final is None:
-            try:
-                status_msg = "Connecting to MongoDB..."
-                client = pymongo.MongoClient(default_uri, serverSelectionTimeoutMS=10000)
-                db = client[default_db]
-                collection = db[default_collection]
+    # Load from MongoDB if needed
+    if df_final is None:
+        try:
+            status_msg = "Connecting to MongoDB..."
+            client = pymongo.MongoClient(default_uri, serverSelectionTimeoutMS=10000)
+            db = client[default_db]
+            collection = db[default_collection]
 
-                status_msg = f"Loading {collection.count_documents({}):,} documents from MongoDB..."
-                cursor = collection.find({})
-                records = list(cursor)
+            status_msg = f"Loading {collection.count_documents({}):,} documents from MongoDB..."
+            cursor = collection.find({})
+            records = list(cursor)
 
-                status_msg = "Processing data..."
-                df_final = pd.DataFrame(records)
+            status_msg = "Processing data..."
+            df_final = pd.DataFrame(records)
 
-                # Flatten ObjectId fields
-                if '_id' in df_final.columns:
-                    df_final['_id'] = df_final['_id'].apply(lambda x: str(x) if hasattr(x, '__str__') else x)
-                if 'expected_nonprofit_id' in df_final.columns:
-                    df_final['expected_nonprofit_id'] = df_final['expected_nonprofit_id'].apply(
-                        lambda x: str(x['$oid']) if isinstance(x, dict) and '$oid' in x else str(x)
+            # Flatten ObjectId fields
+            if '_id' in df_final.columns:
+                df_final['_id'] = df_final['_id'].apply(lambda x: str(x) if hasattr(x, '__str__') else x)
+            if 'expected_nonprofit_id' in df_final.columns:
+                df_final['expected_nonprofit_id'] = df_final['expected_nonprofit_id'].apply(
+                    lambda x: str(x['$oid']) if isinstance(x, dict) and '$oid' in x else str(x)
+                )
+            if 'nonprofit_id' in df_final.columns:
+                df_final['nonprofit_id'] = df_final['nonprofit_id'].apply(
+                    lambda x: str(x['$oid']) if isinstance(x, dict) and '$oid' in x else str(x)
+                )
+            if 'query_id' in df_final.columns:
+                df_final['query_id'] = df_final['query_id'].apply(
+                    lambda x: str(x['$oid']) if isinstance(x, dict) and '$oid' in x else str(x)
+                )
+
+            # Convert date
+            if 'evaluated_at' in df_final.columns:
+                df_final['evaluated_at'] = pd.to_datetime(
+                    df_final['evaluated_at'].apply(
+                        lambda x: x['$date'] if isinstance(x, dict) and '$date' in x else x
                     )
-                if 'nonprofit_id' in df_final.columns:
-                    df_final['nonprofit_id'] = df_final['nonprofit_id'].apply(
-                        lambda x: str(x['$oid']) if isinstance(x, dict) and '$oid' in x else str(x)
-                    )
-                if 'query_id' in df_final.columns:
-                    df_final['query_id'] = df_final['query_id'].apply(
-                        lambda x: str(x['$oid']) if isinstance(x, dict) and '$oid' in x else str(x)
-                    )
+                )
 
-                # Convert date
-                if 'evaluated_at' in df_final.columns:
-                    df_final['evaluated_at'] = pd.to_datetime(
-                        df_final['evaluated_at'].apply(
-                            lambda x: x['$date'] if isinstance(x, dict) and '$date' in x else x
-                        )
+            # Handle Double type for numeric fields
+            numeric_fields = ['reciprocal_rank', 'search_latency_ms']
+            for field in numeric_fields:
+                if field in df_final.columns:
+                    df_final[field] = df_final[field].apply(
+                        lambda x: float(x['$numberDouble']) if isinstance(x, dict) and '$numberDouble' in x else float(x) if x is not None else None
                     )
 
-                # Handle Double type for numeric fields
-                numeric_fields = ['reciprocal_rank', 'search_latency_ms']
-                for field in numeric_fields:
-                    if field in df_final.columns:
-                        df_final[field] = df_final[field].apply(
-                            lambda x: float(x['$numberDouble']) if isinstance(x, dict) and '$numberDouble' in x else float(x) if x is not None else None
-                        )
+            # Save to cache
+            if use_cache.value:
+                try:
+                    with open(cache_file, 'wb') as f:
+                        pickle.dump(df_final, f)
+                    status_msg = f"✓ Loaded {len(df_final):,} records from MongoDB (cached)"
+                except Exception as cache_error:
+                    status_msg = f"✓ Loaded {len(df_final):,} records from MongoDB (cache save failed)"
+            else:
+                status_msg = f"✓ Loaded {len(df_final):,} records from MongoDB"
 
-                # Save to cache
-                if use_cache.value:
-                    try:
-                        with open(cache_file, 'wb') as f:
-                            pickle.dump(df_final, f)
-                        status_msg = f"✓ Loaded {len(df_final):,} records from MongoDB (cached)"
-                    except Exception as cache_error:
-                        status_msg = f"✓ Loaded {len(df_final):,} records from MongoDB (cache save failed)"
-                else:
-                    status_msg = f"✓ Loaded {len(df_final):,} records from MongoDB"
-
-            except Exception as e:
-                status_msg = f"✗ Error: {str(e)}"
-                df_final = None
+        except Exception as e:
+            status_msg = f"✗ Error: {str(e)}"
+            df_final = None
 
     if status_msg:
         mo.md(f"**Status:** {status_msg}")
@@ -303,6 +306,30 @@ def __(filtered_df, go, mo, np, pd):
             np.round(pivot_data.values, 3).astype(str)
         )
 
+        # Calculate additional stats for hover
+        hover_text = []
+        for i, nonprofit in enumerate(pivot_data.index):
+            row = []
+            for j, query_type in enumerate(pivot_data.columns):
+                mrr = pivot_data.iloc[i, j]
+                if pd.notna(mrr):
+                    # Get stats for this cell
+                    _cell_data = filtered_df[
+                        (filtered_df['query_type'] == query_type) &
+                        (filtered_df['expected_nonprofit_name'] == nonprofit)
+                    ]
+                    if len(_cell_data) > 0:
+                        _avg_rank = _cell_data['rank'].mean()
+                        _top5 = _cell_data['found_in_top_5'].mean() * 100
+                        _n_queries = len(_cell_data)
+                        hover = f"<b>{nonprofit}</b><br>{query_type}<br><br>MRR: {mrr:.3f}<br>Avg Rank: {_avg_rank:.1f}<br>Top-5: {_top5:.0f}%<br>Queries: {_n_queries}<br><br><i>Click for details</i>"
+                    else:
+                        hover = f"<b>{nonprofit}</b><br>{query_type}<br><br>MRR: {mrr:.3f}"
+                else:
+                    hover = f"<b>{nonprofit}</b><br>{query_type}<br><br>No data"
+                row.append(hover)
+            hover_text.append(row)
+
         # Create heatmap
         fig = go.Figure(data=go.Heatmap(
             z=pivot_data.values,
@@ -310,12 +337,14 @@ def __(filtered_df, go, mo, np, pd):
             y=pivot_data.index,
             colorscale='RdYlGn',
             text=text_labels,
+            hovertext=hover_text,
+            hovertemplate='%{hovertext}<extra></extra>',
             texttemplate='%{text}',
             textfont={"size": 10},
             colorbar=dict(title="Mean<br>Reciprocal<br>Rank"),
             hoverongaps=False,
-            xgap=3,  # Add horizontal gap between cells
-            ygap=1   # Add small vertical gap between cells
+            xgap=3,
+            ygap=1
         ))
 
         fig.update_layout(
