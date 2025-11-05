@@ -1,11 +1,11 @@
 import marimo
 
 __generated_with = "0.17.7"
-app = marimo.App(width="medium")
+app = marimo.App(width="full")
 
 
 @app.cell
-def __():
+def _():
     import marimo as mo
     import pymongo
     import pandas as pd
@@ -22,12 +22,11 @@ def __():
     except ImportError:
         HAS_CONFIG = False
         config = None
-
     return HAS_CONFIG, Path, config, go, mo, np, pd, pickle, px, pymongo
 
 
 @app.cell
-def __(mo):
+def _(mo):
     mo.md("""
     # Vector Search Performance Analysis
 
@@ -37,7 +36,7 @@ def __(mo):
 
 
 @app.cell
-def __(HAS_CONFIG, config, mo):
+def _(HAS_CONFIG, config, mo):
     # Use config.py if available
     default_uri = config.MONGODB_URI if HAS_CONFIG and hasattr(config, 'MONGODB_URI') else "mongodb+srv://"
     default_db = config.DATABASE_NAME if HAS_CONFIG and hasattr(config, 'DATABASE_NAME') else "your_database"
@@ -62,7 +61,18 @@ def __(HAS_CONFIG, config, mo):
 
 
 @app.cell
-def __(Path, default_collection, default_db, default_uri, load_button, mo, pd, pickle, pymongo, use_cache):
+def _(
+    Path,
+    default_collection,
+    default_db,
+    default_uri,
+    load_button,
+    mo,
+    pd,
+    pickle,
+    pymongo,
+    use_cache,
+):
     # Stop execution until button is clicked
     mo.stop(not load_button.value)
 
@@ -146,12 +156,11 @@ def __(Path, default_collection, default_db, default_uri, load_button, mo, pd, p
 
     if status_msg:
         mo.md(f"**Status:** {status_msg}")
-
-    return cache_file, df_final, status_msg
+    return (df_final,)
 
 
 @app.cell
-def __(df_final, mo):
+def _(df_final, mo):
     overview = None
     if df_final is not None:
         overview = mo.md(f"""
@@ -168,7 +177,7 @@ def __(df_final, mo):
 
 
 @app.cell
-def __(df_final, mo):
+def _(df_final, mo):
     sample_display = None
     if df_final is not None:
         display_cols = [
@@ -185,7 +194,7 @@ def __(df_final, mo):
 
 
 @app.cell
-def __(df_final, mo):
+def _(df_final, mo):
     query_type_filter = None
     nonprofit_filter = None
     filters_display = None
@@ -214,7 +223,7 @@ def __(df_final, mo):
 
 
 @app.cell
-def __(df_final, nonprofit_filter, query_type_filter):
+def _(df_final, nonprofit_filter, query_type_filter):
     # Apply filters
     filtered_df = df_final
 
@@ -226,12 +235,11 @@ def __(df_final, nonprofit_filter, query_type_filter):
         # Filter by nonprofit
         if nonprofit_filter.value:
             filtered_df = filtered_df[filtered_df['expected_nonprofit_name'].isin(nonprofit_filter.value)]
-
-    return filtered_df,
+    return (filtered_df,)
 
 
 @app.cell
-def __(filtered_df, mo):
+def _(filtered_df, mo):
     filtered_status = None
     if filtered_df is not None and len(filtered_df) > 0:
         filtered_status = mo.md(f"""
@@ -243,7 +251,7 @@ def __(filtered_df, mo):
 
 
 @app.cell
-def __(filtered_df, mo, pd):
+def _(filtered_df, mo):
     agg_display = None
     agg_by_query_type = None
 
@@ -272,11 +280,11 @@ def __(filtered_df, mo, pd):
         ])
 
     agg_display
-    return agg_by_query_type,
+    return
 
 
 @app.cell
-def __(filtered_df, go, mo, np, pd):
+def _(filtered_df, go, mo, np, pd):
     heatmap_display = None
     heatmap_chart = None
     pivot_data = None
@@ -306,7 +314,7 @@ def __(filtered_df, go, mo, np, pd):
             np.round(pivot_data.values, 3).astype(str)
         )
 
-        # Calculate additional stats for hover
+        # Calculate detailed stats for hover
         hover_text = []
         for i, nonprofit in enumerate(pivot_data.index):
             row = []
@@ -319,10 +327,35 @@ def __(filtered_df, go, mo, np, pd):
                         (filtered_df['expected_nonprofit_name'] == nonprofit)
                     ]
                     if len(_cell_data) > 0:
+                        # Get first query result for this combo
+                        _first = _cell_data.iloc[0]
+                        _nonprofit_id = _first['expected_nonprofit_id']
+                        _query_text = _first.get('query_text', 'N/A')
                         _avg_rank = _cell_data['rank'].mean()
-                        _top5 = _cell_data['found_in_top_5'].mean() * 100
-                        _n_queries = len(_cell_data)
-                        hover = f"<b>{nonprofit}</b><br>{query_type}<br><br>MRR: {mrr:.3f}<br>Avg Rank: {_avg_rank:.1f}<br>Top-5: {_top5:.0f}%<br>Queries: {_n_queries}<br><br><i>Click for details</i>"
+                        _mrr5 = _cell_data['found_in_top_5'].mean()
+                        _mrr10 = _cell_data['found_in_top_10'].mean()
+                        _mrr20 = _cell_data['found_in_top_20'].mean()
+                        _avg_latency = _cell_data['search_latency_ms'].mean()
+
+                        # Get top results from the first query
+                        _top_results = _first.get('top_k_results', [])[:10] if 'top_k_results' in _first else []
+
+                        # Build hover text
+                        hover = f"<b>{nonprofit}</b> (ID: {_nonprofit_id})<br>"
+                        hover += f"<b>Query Type:</b> {query_type}<br>"
+                        hover += f"<i>\"{_query_text}\"</i><br><br>"
+                        hover += f"<b>Rank:</b> {_avg_rank:.1f}<br>"
+                        hover += f"<b>MRR@5:</b> {_mrr5:.2f}  <b>MRR@10:</b> {_mrr10:.2f}  <b>MRR@20:</b> {_mrr20:.2f}<br><br>"
+
+                        if _top_results:
+                            hover += "<b>Top Results:</b><br>"
+                            for idx, result in enumerate(_top_results, 1):
+                                _res_id = result.get('nonprofit_id', {}).get('$oid', 'N/A') if isinstance(result.get('nonprofit_id'), dict) else result.get('nonprofit_id', 'N/A')
+                                _res_name = result.get('nonprofit_name', 'N/A')
+                                hover += f"{idx}. {_res_name[:30]}... ({_res_id})<br>"
+                            hover += "<br>"
+
+                        hover += f"<b>Latency:</b> {_avg_latency:.0f}ms"
                     else:
                         hover = f"<b>{nonprofit}</b><br>{query_type}<br><br>MRR: {mrr:.3f}"
                 else:
@@ -348,7 +381,7 @@ def __(filtered_df, go, mo, np, pd):
         ))
 
         fig.update_layout(
-            title="Mean Reciprocal Rank by Query Type and Nonprofit<br><sub>Sorted by performance (best at top-left). Click a cell for details.</sub>",
+            title="Mean Reciprocal Rank by Query Type and Nonprofit<br><sub>Sorted by performance (best at top-left). Hover for details.</sub>",
             xaxis=dict(
                 title="Query Type",
                 side='top',  # Move x-axis labels to top
@@ -364,93 +397,17 @@ def __(filtered_df, go, mo, np, pd):
             margin=dict(t=200, b=50, l=200, r=100)  # More space for labels
         )
 
-        # Wrap in mo.ui.plotly to capture click events
-        heatmap_chart = mo.ui.plotly(fig)
-
         heatmap_display = mo.vstack([
             mo.md("""## Heatmap: Query Type × Nonprofit"""),
-            heatmap_chart
+            mo.ui.plotly(fig)
         ])
 
     heatmap_display
-    return heatmap_chart, pivot_data
+    return
 
 
 @app.cell
-def __(filtered_df, heatmap_chart, mo, pd):
-    cell_detail_modal = None
-
-    if heatmap_chart is not None and heatmap_chart.value:
-        # Get clicked point data
-        click_data = heatmap_chart.value
-
-        if click_data and len(click_data['points']) > 0:
-            point = click_data['points'][0]
-            clicked_query_type = point['x']
-            clicked_nonprofit = point['y']
-            mrr_value = point['z']
-
-            # Filter data for this specific combination
-            cell_data = filtered_df[
-                (filtered_df['query_type'] == clicked_query_type) &
-                (filtered_df['expected_nonprofit_name'] == clicked_nonprofit)
-            ].copy()
-
-            if len(cell_data) > 0:
-                # Calculate statistics
-                num_queries = len(cell_data)
-                avg_rank = cell_data['rank'].mean()
-                median_rank = cell_data['rank'].median()
-                top1_rate = cell_data['found_in_top_1'].mean() * 100
-                top5_rate = cell_data['found_in_top_5'].mean() * 100
-                top10_rate = cell_data['found_in_top_10'].mean() * 100
-                avg_latency = cell_data['search_latency_ms'].mean()
-
-                # Show detailed results
-                detail_cols = [
-                    'query_text', 'rank', 'reciprocal_rank',
-                    'found_in_top_1', 'found_in_top_5', 'found_in_top_10',
-                    'search_latency_ms'
-                ]
-                available_detail_cols = [col for col in detail_cols if col in cell_data.columns]
-
-                cell_detail_modal = mo.vstack([
-                    mo.md(f"""
-                    ### 📊 Cell Details
-
-                    **Nonprofit:** {clicked_nonprofit}
-                    **Query Type:** {clicked_query_type}
-
-                    ---
-
-                    **Performance Summary:**
-                    - **Mean Reciprocal Rank:** {mrr_value:.4f}
-                    - **Average Rank:** {avg_rank:.1f}
-                    - **Median Rank:** {median_rank:.0f}
-                    - **Top 1 Rate:** {top1_rate:.1f}%
-                    - **Top 5 Rate:** {top5_rate:.1f}%
-                    - **Top 10 Rate:** {top10_rate:.1f}%
-                    - **Avg Latency:** {avg_latency:.0f}ms
-                    - **Total Queries:** {num_queries}
-
-                    ---
-
-                    **Individual Query Results:**
-                    """),
-                    mo.ui.table(
-                        cell_data[available_detail_cols].sort_values('reciprocal_rank', ascending=False),
-                        selection=None,
-                        pagination=True,
-                        page_size=10
-                    )
-                ])
-
-    cell_detail_modal
-    return cell_detail_modal,
-
-
-@app.cell
-def __(filtered_df, mo, px):
+def _(filtered_df, mo, px):
     success_display = None
     fig2 = None
     success_cols = None
@@ -490,11 +447,11 @@ def __(filtered_df, mo, px):
         ])
 
     success_display
-    return fig2, success_cols, success_data, success_data_melted
+    return
 
 
 @app.cell
-def __(filtered_df, mo, px):
+def _(filtered_df, mo, px):
     rank_display = None
     fig3 = None
     rank_data = None
@@ -521,11 +478,11 @@ def __(filtered_df, mo, px):
         ])
 
     rank_display
-    return fig3, rank_data
+    return
 
 
 @app.cell
-def __(filtered_df, mo, px):
+def _(filtered_df, mo, px):
     latency_display = None
     fig4 = None
 
@@ -547,69 +504,11 @@ def __(filtered_df, mo, px):
         ])
 
     latency_display
-    return fig4,
+    return
 
 
 @app.cell
-def __(filtered_df, mo):
-    nonprofit_select = None
-    nonprofit_selector = None
-
-    if filtered_df is not None and len(filtered_df) > 0:
-        # Select specific nonprofit to drill down
-        nonprofit_select = mo.ui.dropdown(
-            options=sorted(filtered_df['expected_nonprofit_name'].dropna().unique().tolist()),
-            label="Select Nonprofit for Details",
-            value=sorted(filtered_df['expected_nonprofit_name'].dropna().unique().tolist())[0]
-        )
-
-        nonprofit_selector = mo.vstack([
-            mo.md("""## Detailed Query Analysis"""),
-            nonprofit_select
-        ])
-
-    nonprofit_selector
-    return nonprofit_select,
-
-
-@app.cell
-def __(filtered_df, mo, nonprofit_select):
-    detail_display = None
-    nonprofit_detail = None
-    detail_cols = None
-    available_detail_cols = None
-
-    if filtered_df is not None and nonprofit_select is not None and nonprofit_select.value:
-        nonprofit_detail = filtered_df[
-            filtered_df['expected_nonprofit_name'] == nonprofit_select.value
-        ].copy()
-
-        # Show detailed results
-        detail_cols = [
-            'query_type', 'query_text', 'rank', 'reciprocal_rank',
-            'found_in_top_1', 'found_in_top_5', 'found_in_top_10',
-            'search_latency_ms'
-        ]
-        available_detail_cols = [col for col in detail_cols if col in nonprofit_detail.columns]
-
-        detail_display = mo.vstack([
-            mo.md(f"""
-            ### Results for: {nonprofit_select.value}
-
-            **Total queries:** {len(nonprofit_detail)}
-            """),
-            mo.ui.table(
-                nonprofit_detail[available_detail_cols].sort_values('reciprocal_rank', ascending=False),
-                selection=None
-            )
-        ])
-
-    detail_display
-    return available_detail_cols, detail_cols, nonprofit_detail
-
-
-@app.cell
-def __(filtered_df, mo, pd):
+def _(filtered_df, mo):
     export_info = None
     if filtered_df is not None and len(filtered_df) > 0:
         export_info = mo.md("""
