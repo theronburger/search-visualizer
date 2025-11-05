@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "search-visualizer"
+version = "0.1.0"
+description = ""
+authors = ["Theron Burger <dev@theronburger.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+marimo = ">=0.8.0"
+pymongo = ">=4.6.0"
+pandas = ">=2.0.0"
+plotly = ">=5.18.0"
+numpy = ">=1.24.0"
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
