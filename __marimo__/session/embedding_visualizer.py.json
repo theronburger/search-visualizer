@@ -1,0 +1,190 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.17.7"
+  },
+  "cells": [
+    {
+      "id": "MJUe",
+      "code_hash": "d0ed290e1f3dc95900a1ca98b2aa2b0e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"nonprofit-embedding-visualizer\">Nonprofit Embedding Visualizer</h1>\n<span class=\"paragraph\">Interactive visualization of nonprofit vector embeddings using dimensionality reduction.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "34aebf9bedca188e0a0d92114039a2a9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "c415e3a071ba5751512f37b5ef09842b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"load-data\">Load Data</h2></span><marimo-ui-element object-id='vblA-0' random-id='b2d02c8a-c2d3-4813-3462-c02a18897416'><marimo-checkbox data-initial-value='true' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Use local cache&lt;/span&gt;&lt;/span&gt;&quot;' data-disabled='false'></marimo-checkbox></marimo-ui-element><marimo-ui-element object-id='vblA-1' random-id='5f4f28d4-4f4a-018e-f83d-832379a43345'><marimo-button data-initial-value='0' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Load Nonprofit Embeddings&lt;/span&gt;&lt;/span&gt;&quot;' data-kind='&quot;neutral&quot;' data-disabled='false' data-full-width='false'></marimo-button></marimo-ui-element><span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><em>Using: deedserver / nonprofits_testset_vectors</em></span></span></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "96163d4d3ff658d8d7b932f614f45d05",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "2828becae516f67771ac9dd7643a7d86",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"dataset-overview\">Dataset Overview</h2>\n<ul>\n<li><strong>Total nonprofits:</strong> 11,175</li>\n<li><strong>Embedding dimensions:</strong> 1024</li>\n<li><strong>Unique categories:</strong> 154</li>\n<li><strong>Strategies:</strong> 1</li>\n<li><strong>Testset names:</strong> 16</li>\n<li><strong>States:</strong> 92</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "a732c1fca4b1b20249394a3dc525588b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"sample-data\">Sample Data</h3></span><marimo-ui-element object-id='PKri-0' random-id='06a4287b-a873-6fc1-2b9c-a08dc719d7db'><marimo-table data-initial-value='[]' data-label='null' data-data='&quot;[{&#92;&quot;_marimo_row_id&#92;&quot;:0,&#92;&quot;name&#92;&quot;:&#92;&quot;Dominican Independence and Heritage Award Committee of RI&#92;&quot;,&#92;&quot;categories&#92;&quot;:&#92;&quot;arts&#92;&quot;,&#92;&quot;location_city&#92;&quot;:&#92;&quot;Cranston&#92;&quot;,&#92;&quot;location_state&#92;&quot;:&#92;&quot;RI&#92;&quot;,&#92;&quot;strategy&#92;&quot;:&#92;&quot;initial&#92;&quot;,&#92;&quot;testset_names&#92;&quot;:&#92;&quot;mislabeled_religious_2025-10-30&#92;&quot;},{&#92;&quot;_marimo_row_id&#92;&quot;:1,&#92;&quot;name&#92;&quot;:&#92;&quot;Archivists for Congregations of Women Religious&#92;&quot;,&#92;&quot;categories&#92;&quot;:&#92;&quot;education&#92;&quot;,&#92;&quot;location_city&#92;&quot;:&#92;&quot;Mt St Joseph&#92;&quot;,&#92;&quot;location_state&#92;&quot;:&#92;&quot;OH&#92;&quot;,&#92;&quot;strategy&#92;&quot;:&#92;&quot;initial&#92;&quot;,&#92;&quot;testset_names&#92;&quot;:&#92;&quot;mislabeled_religious_2025-10-30&#92;&quot;},{&#92;&quot;_marimo_row_id&#92;&quot;:2,&#92;&quot;name&#92;&quot;:&#92;&quot;FRANCISCAN EARTH LITERACY CENTER&#92;&quot;,&#92;&quot;categories&#92;&quot;:&#92;&quot;&#92;&quot;,&#92;&quot;location_city&#92;&quot;:&#92;&quot;Tiffin&#92;&quot;,&#92;&quot;location_state&#92;&quot;:&#92;&quot;OH&#92;&quot;,&#92;&quot;strategy&#92;&quot;:&#92;&quot;initial&#92;&quot;,&#92;&quot;testset_names&#92;&quot;:&#92;&quot;mislabeled_religious_2025-10-30&#92;&quot;},{&#92;&quot;_marimo_row_id&#92;&quot;:3,&#92;&quot;name&#92;&quot;:&#92;&quot;2Nd Chapter Ministries&#92;&quot;,&#92;&quot;categories&#92;&quot;:&#92;&quot;&#92;&quot;,&#92;&quot;location_city&#92;&quot;:&#92;&quot;Wheelersburg&#92;&quot;,&#92;&quot;location_state&#92;&quot;:&#92;&quot;OH&#92;&quot;,&#92;&quot;strategy&#92;&quot;:&#92;&quot;initial&#92;&quot;,&#92;&quot;testset_names&#92;&quot;:&#92;&quot;mislabeled_religious_2025-10-30&#92;&quot;},{&#92;&quot;_marimo_row_id&#92;&quot;:4,&#92;&quot;name&#92;&quot;:&#92;&quot;2nd Chance Ministries&#92;&quot;,&#92;&quot;categories&#92;&quot;:&#92;&quot;advocacy, foodaccess, homelessness&#92;&quot;,&#92;&quot;location_city&#92;&quot;:&#92;&quot;Westerville&#92;&quot;,&#92;&quot;location_state&#92;&quot;:&#92;&quot;OH&#92;&quot;,&#92;&quot;strategy&#92;&quot;:&#92;&quot;initial&#92;&quot;,&#92;&quot;testset_names&#92;&quot;:&#92;&quot;mislabeled_religious_2025-10-30&#92;&quot;},{&#92;&quot;_marimo_row_id&#92;&quot;:5,&#92;&quot;name&#92;&quot;:&#92;&quot;Berea International Christian Fellowship (Religious)&#92;&quot;,&#92;&quot;categories&#92;&quot;:&#92;&quot;&#92;&quot;,&#92;&quot;location_city&#92;&quot;:&#92;&quot;Cincinnati&#92;&quot;,&#92;&quot;location_state&#92;&quot;:&#92;&quot;OH&#92;&quot;,&#92;&quot;strategy&#92;&quot;:&#92;&quot;initial&#92;&quot;,&#92;&quot;testset_names&#92;&quot;:&#92;&quot;mislabeled_religious_2025-10-30&#92;&quot;},{&#92;&quot;_marimo_row_id&#92;&quot;:6,&#92;&quot;name&#92;&quot;:&#92;&quot;Dominican Monastery Nuns of the Perpetual Rosary&#92;&quot;,&#92;&quot;categories&#92;&quot;:&#92;&quot;&#92;&quot;,&#92;&quot;location_city&#92;&quot;:&#92;&quot;Heath&#92;&quot;,&#92;&quot;location_state&#92;&quot;:&#92;&quot;OH&#92;&quot;,&#92;&quot;strategy&#92;&quot;:&#92;&quot;initial&#92;&quot;,&#92;&quot;testset_names&#92;&quot;:&#92;&quot;mislabeled_religious_2025-10-30&#92;&quot;},{&#92;&quot;_marimo_row_id&#92;&quot;:7,&#92;&quot;name&#92;&quot;:&#92;&quot;4 Life Ministry&#92;&quot;,&#92;&quot;categories&#92;&quot;:&#92;&quot;&#92;&quot;,&#92;&quot;location_city&#92;&quot;:&#92;&quot;Dayton&#92;&quot;,&#92;&quot;location_state&#92;&quot;:&#92;&quot;OH&#92;&quot;,&#92;&quot;strategy&#92;&quot;:&#92;&quot;initial&#92;&quot;,&#92;&quot;testset_names&#92;&quot;:&#92;&quot;mislabeled_religious_2025-10-30&#92;&quot;},{&#92;&quot;_marimo_row_id&#92;&quot;:8,&#92;&quot;name&#92;&quot;:&#92;&quot;Akron Area Interfaith Council&#92;&quot;,&#92;&quot;categories&#92;&quot;:&#92;&quot;&#92;&quot;,&#92;&quot;location_city&#92;&quot;:&#92;&quot;Fairlawn&#92;&quot;,&#92;&quot;location_state&#92;&quot;:&#92;&quot;OH&#92;&quot;,&#92;&quot;strategy&#92;&quot;:&#92;&quot;initial&#92;&quot;,&#92;&quot;testset_names&#92;&quot;:&#92;&quot;mislabeled_religious_2025-10-30&#92;&quot;},{&#92;&quot;_marimo_row_id&#92;&quot;:9,&#92;&quot;name&#92;&quot;:&#92;&quot;2nd Covenant Ministries&#92;&quot;,&#92;&quot;categories&#92;&quot;:&#92;&quot;&#92;&quot;,&#92;&quot;location_city&#92;&quot;:&#92;&quot;Vandalia&#92;&quot;,&#92;&quot;location_state&#92;&quot;:&#92;&quot;OH&#92;&quot;,&#92;&quot;strategy&#92;&quot;:&#92;&quot;initial&#92;&quot;,&#92;&quot;testset_names&#92;&quot;:&#92;&quot;mislabeled_religious_2025-10-30&#92;&quot;}]&quot;' data-total-rows='10' data-total-columns='6' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='10' data-field-types='[[&quot;name&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;categories&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;location_city&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;location_state&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;strategy&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;testset_names&quot;,[&quot;string&quot;,&quot;object&quot;]]]' data-selection='&quot;multi&quot;' data-show-filters='true' data-show-download='true' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='true' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='true' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "f76c4709fdd1e7aa7d0823040dd70f27",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"visualization-settings\">Visualization Settings</h2></span><div style='display: flex;flex: 1;flex-direction: row;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='Xref-0' random-id='298c265c-6715-45eb-60ae-4fb57df471d3'><marimo-dropdown data-initial-value='[&quot;PCA&quot;]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Dimensionality Reduction Method&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;PCA&quot;,&quot;UMAP&quot;,&quot;t-SNE&quot;]' data-allow-select-none='false' data-searchable='false' data-full-width='false'></marimo-dropdown></marimo-ui-element><marimo-ui-element object-id='Xref-1' random-id='f5b3e891-a528-0f2c-69ce-951b8ab7d5c6'><marimo-dropdown data-initial-value='[&quot;categories&quot;]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Color By&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;categories&quot;,&quot;strategy&quot;,&quot;testset_names&quot;,&quot;location_state&quot;]' data-allow-select-none='false' data-searchable='false' data-full-width='false'></marimo-dropdown></marimo-ui-element></div><div style='display: flex;flex: 1;flex-direction: row;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='Xref-2' random-id='d04fc673-6f72-f3ec-576a-e0954b4928b8'><marimo-multiselect data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Filter by Category (leave empty for all)&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;advocacy&quot;,&quot;animals&quot;,&quot;arts&quot;,&quot;children&quot;,&quot;disabilities&quot;,&quot;disasterrecovery&quot;,&quot;education&quot;,&quot;employment&quot;,&quot;environment&quot;,&quot;foodaccess&quot;,&quot;health&quot;,&quot;homelessness&quot;,&quot;lgbtq&quot;,&quot;mentalhealth&quot;,&quot;mentoring&quot;,&quot;politics&quot;,&quot;refugeesandhumanitarianaid&quot;,&quot;seniors&quot;,&quot;sportsandrecreation&quot;,&quot;sustainability&quot;,&quot;technology&quot;,&quot;veterans&quot;,&quot;women&quot;,&quot;youth&quot;]' data-full-width='false'></marimo-multiselect></marimo-ui-element><marimo-ui-element object-id='Xref-3' random-id='4156f430-33ff-3e3a-e121-9426fc10a62f'><marimo-multiselect data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Filter by State (leave empty for all)&lt;/span&gt;&lt;/span&gt;&quot;' data-options='[&quot;00&quot;,&quot;AB&quot;,&quot;ACT&quot;,&quot;AK&quot;,&quot;AL&quot;,&quot;AR&quot;,&quot;AS&quot;,&quot;AZ&quot;,&quot;BC&quot;,&quot;CA&quot;,&quot;CO&quot;,&quot;CT&quot;,&quot;DC&quot;,&quot;DE&quot;,&quot;EC&quot;,&quot;ER&quot;,&quot;EY&quot;,&quot;FL&quot;,&quot;GA&quot;,&quot;GALATI&quot;,&quot;GP&quot;,&quot;GU&quot;,&quot;HH&quot;,&quot;HI&quot;,&quot;HR&quot;,&quot;IA&quot;,&quot;ID&quot;,&quot;IL&quot;,&quot;IN&quot;,&quot;KS&quot;,&quot;KY&quot;,&quot;LA&quot;,&quot;MA&quot;,&quot;MB&quot;,&quot;MD&quot;,&quot;ME&quot;,&quot;METRO MANILA&quot;,&quot;MI&quot;,&quot;MN&quot;,&quot;MO&quot;,&quot;MS&quot;,&quot;MT&quot;,&quot;N/A&quot;,&quot;NB&quot;,&quot;NC&quot;,&quot;NCR&quot;,&quot;ND&quot;,&quot;NE&quot;,&quot;NH&quot;,&quot;NJ&quot;,&quot;NL&quot;,&quot;NM&quot;,&quot;NORTH&quot;,&quot;NS&quot;,&quot;NSW&quot;,&quot;NT&quot;,&quot;NV&quot;,&quot;NY&quot;,&quot;OH&quot;,&quot;OK&quot;,&quot;ON&quot;,&quot;OR&quot;,&quot;PA&quot;,&quot;PE&quot;,&quot;PLAINE WILHEMS&quot;,&quot;PR&quot;,&quot;QC&quot;,&quot;QLD&quot;,&quot;QUEZON CITY&quot;,&quot;RI&quot;,&quot;ROMANIA&quot;,&quot;SA&quot;,&quot;SALAJ&quot;,&quot;SC&quot;,&quot;SD&quot;,&quot;SECTOR 3&quot;,&quot;SK&quot;,&quot;SR&quot;,&quot;TAS&quot;,&quot;TN&quot;,&quot;TX&quot;,&quot;UT&quot;,&quot;VA&quot;,&quot;VI&quot;,&quot;VIA ISRAEL&quot;,&quot;VIC&quot;,&quot;VT&quot;,&quot;WA&quot;,&quot;WEST BANK&quot;,&quot;WI&quot;,&quot;WV&quot;,&quot;WY&quot;]' data-full-width='false'></marimo-multiselect></marimo-ui-element></div></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "e9a8b2d464bf22226c6470f8eae55b35",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "41af7ae9872ac5f08820a9d413e98991",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"filtered-dataset\">Filtered Dataset</h3>\n<span class=\"paragraph\"><strong>802</strong> nonprofits selected for visualization</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "6cd8c7ff70d684a4aa886ac164d79a37",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">\u2713 t-SNE complete</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "ed6dc06e7d22c886434b57b25946356b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"embedding-visualization\">Embedding Visualization</h2></span><span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><em>Categories are colored by content similarity - similar category sets have similar colors</em></span></span><marimo-ui-element object-id='Kclp-0' random-id='69913478-30d5-8302-36e0-029301bb8195'><marimo-vega data-initial-value='{}' data-label='null' data-spec='{&quot;config&quot;:{&quot;view&quot;:{&quot;continuousWidth&quot;:300,&quot;continuousHeight&quot;:300}},&quot;data&quot;:{&quot;url&quot;:&quot;./@file/391106-24953616-dFzJjK2i.arrow&quot;,&quot;format&quot;:{&quot;type&quot;:&quot;arrow&quot;}},&quot;mark&quot;:{&quot;type&quot;:&quot;circle&quot;,&quot;size&quot;:60},&quot;encoding&quot;:{&quot;color&quot;:{&quot;condition&quot;:{&quot;param&quot;:&quot;param_11&quot;,&quot;field&quot;:&quot;color_value&quot;,&quot;legend&quot;:null,&quot;scale&quot;:null,&quot;title&quot;:&quot;Categories&quot;,&quot;type&quot;:&quot;nominal&quot;},&quot;value&quot;:&quot;lightgray&quot;},&quot;tooltip&quot;:[{&quot;field&quot;:&quot;name&quot;,&quot;title&quot;:&quot;Nonprofit&quot;,&quot;type&quot;:&quot;nominal&quot;},{&quot;field&quot;:&quot;categories&quot;,&quot;title&quot;:&quot;Categories&quot;,&quot;type&quot;:&quot;nominal&quot;},{&quot;field&quot;:&quot;location_city&quot;,&quot;title&quot;:&quot;City&quot;,&quot;type&quot;:&quot;nominal&quot;},{&quot;field&quot;:&quot;location_state&quot;,&quot;title&quot;:&quot;State&quot;,&quot;type&quot;:&quot;nominal&quot;},{&quot;field&quot;:&quot;strategy&quot;,&quot;title&quot;:&quot;Strategy&quot;,&quot;type&quot;:&quot;nominal&quot;},{&quot;field&quot;:&quot;testset_names&quot;,&quot;title&quot;:&quot;Testset&quot;,&quot;type&quot;:&quot;nominal&quot;}],&quot;x&quot;:{&quot;field&quot;:&quot;x&quot;,&quot;title&quot;:&quot;Dimension 1&quot;,&quot;type&quot;:&quot;quantitative&quot;},&quot;y&quot;:{&quot;field&quot;:&quot;y&quot;,&quot;title&quot;:&quot;Dimension 2&quot;,&quot;type&quot;:&quot;quantitative&quot;}},&quot;height&quot;:600,&quot;params&quot;:[{&quot;name&quot;:&quot;param_11&quot;,&quot;select&quot;:{&quot;type&quot;:&quot;interval&quot;}}],&quot;title&quot;:&quot;Nonprofit Embeddings - Colored by Categories&quot;,&quot;width&quot;:700,&quot;&#36;schema&quot;:&quot;https://vega.github.io/schema/vega-lite/v5.20.1.json&quot;}' data-chart-selection='false' data-field-selection='true'></marimo-vega></marimo-ui-element></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "ca05b7d25ff7edc067b0bb7c9f61147e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "afef0b42805422e1dd8ecc7b50ee33de",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "793280008e2593b7b6c2523ab41ae9ed",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<h2 id=\"export-data\">Export Data</h2>\n<span class=\"paragraph\">To export the 2D embeddings, run:\n<div class=\"language-python codehilite\"><pre><span></span><code><span class=\"n\">embedding_2d</span><span class=\"o\">.</span><span class=\"n\">to_csv</span><span class=\"p\">(</span><span class=\"s1\">&#39;embeddings_2d.csv&#39;</span><span class=\"p\">,</span> <span class=\"n\">index</span><span class=\"o\">=</span><span class=\"kc\">False</span><span class=\"p\">)</span>\n</code></pre></div></span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
